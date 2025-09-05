@@ -17,15 +17,12 @@
 package internal
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"github.com/golang/glog"
-	"io"
 	"net/http"
-	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/blinkbean/dingtalk"
+	"github.com/golang/glog"
 )
 
 type Body struct {
@@ -47,7 +44,7 @@ func init() {
 }
 
 // sendToDingTalkRobot 发送到钉钉机器人
-func sendToDingTalkRobot(token, title, text string) {
+func sendToDingTalkRobot(token, secret, title, text string) {
 
 	//钉钉限制4000字符
 	if utf8.RuneCountInString(text) > 3500 {
@@ -55,30 +52,11 @@ func sendToDingTalkRobot(token, title, text string) {
 		text = string(runes[:3500]) + "..."
 	}
 
-	body := Body{
-		Msgtype: "markdown",
-		Markdown: Markdown{
-			Title: title,
-			Text:  text,
-		},
-	}
-
-	jsonBody, err := json.Marshal(body)
-	if err != nil {
-		glog.Errorf("json marshal error: %w", err)
-		return
-	}
-
-	url := fmt.Sprintf("https://oapi.dingtalk.com/robot/send?access_token=%s", token)
-	resp, err := (*client).Post(url, "application/json", bytes.NewBuffer(jsonBody))
-	bodyBytes, _ := io.ReadAll(resp.Body)
-	respStr := string(bodyBytes)
+	theDingTalkBot := dingtalk.InitDingTalkWithSecret(token, secret)
+	err := theDingTalkBot.SendTextMessage(title + "\n\n" + text)
 
 	if err != nil {
-		glog.Errorf("Dingtalk sent error to %s error: %w", token, err)
-	} else if !strings.Contains(respStr, "\"ok\"") {
-		glog.Errorf("Dingtalk sent to %s error: %s\n", token, respStr)
+		glog.Errorf("Dingtalk sent error to %s, %s, title %s, error: %w", token, secret, title, err)
 	}
-	defer resp.Body.Close()
 
 }

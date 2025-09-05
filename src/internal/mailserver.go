@@ -18,12 +18,13 @@ package internal
 
 import (
 	"errors"
-	"github.com/emersion/go-smtp"
-	"github.com/golang/glog"
 	"io"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/emersion/go-smtp"
+	"github.com/golang/glog"
 )
 
 // The Backend implements SMTP server methods.
@@ -59,22 +60,19 @@ func (s *Session) Rcpt(to string) error {
 }
 
 func (s *Session) Data(r io.Reader) error {
-	if b, err := io.ReadAll(r); err != nil {
+	b, err := io.ReadAll(r)
+	if err != nil {
 		return err
-	} else {
-		original := string(b)
-		subject, content := getSubjectAndContent(original)
-		dingToken := ""
-		if token, ok := (*(*config).MailAddress2DingToken)[s.to]; ok {
-			dingToken = token
-		} else {
-			glog.Warningf("fail to find ding token for email address %s\n", s.to)
-		}
-		glog.Infof("toMail: %s toDing: %s subject: %s", s.to, dingToken, subject)
-
-		go sendToDingTalkRobot(dingToken, subject, content)
-		go sendEmail((*config).SmtpClient, s.to, original)
 	}
+	original := string(b)
+	subject, content := getSubjectAndContent(original)
+	toName := strings.Split(s.to, "@")
+	toNames := strings.Split(toName[0], "_")
+
+	//glog.Infof("toMail: %s toDing: %s, subject: %s", s.to, toName, subject)
+	//glog.Infof("token: %s secret: %s, content: %s", toNames[0], toNames[1], content)
+
+	go sendToDingTalkRobot(toNames[0], toNames[1], subject, content)
 	return nil
 }
 

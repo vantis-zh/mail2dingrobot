@@ -1,11 +1,3 @@
-user: "your-email@example.com"
+user: "a@harmay.internal"
 password: 123456
 port: 1025
-mailAddressDingTokenMap:
-  to@example.com: "111111111111111111111111111111111111111111"
-mailClient:
-  smtpServer: "smtp.example.com"
-  smtpPort: 587
-  tls: true
-  senderEmail: "your-email@example.com"
-  senderPassword: "your-email-password"

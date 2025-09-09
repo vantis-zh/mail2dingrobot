@@ -4,9 +4,10 @@ FROM golang:1.20.4-alpine3.18 as builder
 ARG HOME=/app
 ARG EXECUTABLE=mail2dingrobot
 
-ENV GOPROXY=https://goproxy.cn,direct
+ENV GOPROXY=https://goproxy.cn
 WORKDIR $HOME
 COPY src/ .
+
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o $EXECUTABLE .
 
 FROM alpine:latest
